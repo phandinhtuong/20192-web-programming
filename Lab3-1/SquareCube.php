@@ -8,7 +8,7 @@
             <?php
                 if (array_key_exists("start", $_GET)){
                     $start = $_GET["start"];
-                        $end = $_GET["end"];
+                    $end = $_GET["end"];
                 } else {
                     $start = 0; $end = 0;
                 }
