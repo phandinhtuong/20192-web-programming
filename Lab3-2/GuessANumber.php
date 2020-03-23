@@ -2,73 +2,75 @@
     <head><title>Guess A Number!</title></head>
     <body>
         <form action="<?php echo $_SERVER['PHP_SELF']?>" method="GET">
-        <?php
-        
-            function guess($number, $guessNumber, $times){
-                $times ++;
-                if ($guessNumber < $number){
-                    print("Wrong. Please try a higher number. You have guessed $times times!");
-                }else if ($guessNumber > $number){
-                    print("Wrong. Please try a lower number. You have guessed $times times!");
-                }
-                else {
-                    print("Great! You won! You have guessed $times times!");
-                }
-            }
-            
-            function createNumber(){
-                if (array_key_exists("number", $_GET)){
-                $number = $_GET["number"];
-            } else{
-                srand ((double) microtime() * 10000000);
-                $number = rand(0, 100);
-            }
-            return $number;
-            }
-            
-            function inputNumber(){
-                print("Enter a number: ");
-                if (array_key_exists("input", $_GET)){
-                $input = $_GET["input"];
-                
-            ?>
-            <input type="text" size="4" maxlength="5" name="input"value="<?php echo $_GET["input"];?>">
-            <br> 
-            <?php
+            <h2>
+                Guess number from 0 to 100.
+            </h2>
+       <?php
+            if (!isset($_GET["number"])){
+                srand((double) microtime()*10000000);
+                $number = rand(0,100);
+                //$_GET["number"] = $number;
             }else {
-                
-        ?>
-            <input type="text" size="4" maxlength="5" name="input">
-            <br> 
-        <?php
-            //$input = $_GET["input"];
+                $number = $_GET["number"];
             }
-            //return $input;
-          
-//            if (array_key_exists("times", $_GET)){
-//                $times = $_GET["times"];
-//            }
-//            else {
-//                $times = 0;
-//            }
-            }
-            $number = createNumber();
             
-            print("number = $number");
-            print("<br>");
-        ?>
             
-        <a align="right"><input type="submit" value="Submit">
-        <br>
-        <?php
-        $input = inputNumber();
-            if (!is_numeric($input)){
-                print("You must enter a number!");
-            } else{
-                guess($number, $guessNumber, $times);
+            if (isset($_GET["times"])){
+                $times = $_GET["times"];
+            } else {
+                $times = 0;
             }
-        
-        ?>
+            $check = 0;
+            if (isset($_GET["input"])){
+                if ($_GET["input"] ===null || !is_numeric($_GET["input"])){
+                    print("<br>You must enter a number! ");
+                } else{
+                    $times = $times + 1;
+                    if ($_GET["input"] > $number){
+                    print("<br>Wrong. Please try a lower number. ");
+                }else if ($_GET["input"] < $number){
+                    print("<br>Wrong. Please try a higher number. ");
+                }
+                else{
+                    print("<br>You won! ");
+                    $check = 1;
+                }
+                print("You have guessed $times times!");
+                }
+                    
+            }
+            //print("<br>Number = $number<br>");
+            if ($check == 0){
+                print("<br>Input a number: ");
+            }else {
+                print("<br>Number = $number<br>");
+            }
+            
+            ?>
+        </form>
+        <form action="" method="get">
+            <?php
+                if ($check ==0){
+                    ?>
+             <input type="text" size="4" maxlength="6" name="input">
+            <input name="number" type="hidden" value="<?php echo $number?>" method="get">
+            <input name="times" type="hidden" value="<?php echo $times?>" method="get">
+            <input type="submit" value="submit">
+            <?php
+                    
+                }else {
+                    unset($_GET["number"]);
+                    ?>
+            <!--<input type="text" size="4" maxlength="6" name="input">-->
+<!--            <input name="number" type="hidden" value="" method="get">
+            <input name="times" type="hidden" value="0" method="get">-->
+            <input type="submit" value="reset">
+            
+            <?php 
+                }
+            ?>
+           
         </form>
     </body>
 </html>
+
