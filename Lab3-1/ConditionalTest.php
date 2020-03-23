@@ -18,29 +18,39 @@
         $grade2 = $_POST["grade2"];
         $final = (2 * $grade1 + 3 * $grade2) / 5;
         if ($final > 89){
-            print("Your final grade is $final. You got an A. Congratulation!");
+            printf ("Your final grade is %.1f. You got an A. Congratulation!", $final);
+            $rate = "A";
         } elseif ($final > 79){
-            print ("Your final grade is $final. You got a B.");
+            printf ("Your final grade is %.1f. You got a B.", $final);
+            $rate = "B";
         } elseif ($final > 69){
-            print ("Your final grade is $final. You got a C.");
+            printf ("Your final grade is %.1f. You got a C.", $final);
+            $rate = "C";
         } elseif ($final > 59){
-            print ("Your final grade is $final. You got a D.");
+            printf ("Your final grade is %.1f. You got a D.", $final);
+            $rate = "D";
+        } elseif ($final > 39){
+            printf ("Your final grade is %.1f. You got an E.", $final);
+            $rate = "E";
         } elseif ($final >= 0){
-            print ("Your final grade is $final. You got an F.");
+            printf ("Your final grade is %.1f. You got an F.", $final);
+            $rate = "F";
         } else {
-            print ("Illegal grade less than 0. Final grade = $final.");
+            printf ("Illegal grade less than 0. Final grade = %.1f.", $final);
+            $rate = "Illegal";
         }
         
-//        print("<br></br>");
-//        switch ($rate){
-//            case "A" : print("Excellent!"); break;
-//            case "B" : print("Good!"); break;
-//            case "C" : print("Not bad!"); break;
-//            case "D" : print("Normal!"); break;
-//            case "F" : print("You have to try again!"); break;
-//            default: print("Illegal grade!");
-//            
-//        }
+        print("<br></br>");
+        switch ($rate){
+            case "A" : print("Excellent!"); break;
+            case "B" : print("Good!"); break;
+            case "C" : print("Not bad!"); break;
+            case "D" : print("Normal!"); break;
+            case "E" :
+            case "F" : print("You have to try again!"); break;
+            default: print("Illegal grade!");
+            
+        }
         ?>
     </body>
     
