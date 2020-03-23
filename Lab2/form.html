@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Information Form Input</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <form action="form.php" method="GET">
+            Full name: <input type="text" name="name"><br>
+            DOB: <input type="date" name="dob"><br>
+            Gender: 
+            <input type="radio" name="gender" value="male">Male
+            <input type="radio" name="gender" value="female">Female
+            <input type="radio" name="gender" value="unknown" checked>Unknown<br>
+            Class: <input type="text" name="class"><br>
+            University: <input type="text" name="uni"><br>
+            Hobbies: <br>
+            <input type="checkbox" name="hobbies[]" value="Coding">Coding<br>
+            <input type="checkbox" name="hobbies[]" value="Reading">Reading<br>
+            <input type="checkbox" name="hobbies[]" value="Running">Running<br>
+            <input type="checkbox" name="hobbies[]" value="Jogging">Jogging<br>
+            <input type="checkbox" name="hobbies[]" value="PlayingGames">Playing Games<br>
+            <button type="submit">Submit</button>
+            
+                    
+        </form>
+    </body>
+</html>
