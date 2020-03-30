@@ -88,7 +88,7 @@
                 </td>
                 <td><select name="year">
                     <?php
-                            for ($i=1950; $i<=2050;$i++){
+                            for ($i=0; $i<=3000;$i++){
                                 if ($year==$i){
                                     print("<option selected>$i</option>");
                                 } else {
@@ -169,12 +169,31 @@
             if (array_key_exists("month", $_GET) && $check != 0){
                 if ($month != 0){
                     //print("month = $month");
-                    $check = 1;
+                    switch ($month){
+                    case 1 : case 3 : case 5 : case 7 : case 8 : case 10 : case 12 : 
+                        $numberOfDays = 31;                        break;
+                    case 4 : case 6 : case 9 : case 11 :
+                        $numberOfDays = 30;                        break;
+                    case 2 : {
+                        if (($year%4 == 0 && $year%100!=0) || ($year%400==0)){
+                            $numberOfDays = 29;
+                        } else $numberOfDays = 28;
+                    }
+                default : break;
+                }
+                    if ($day>$numberOfDays){
+                        print("Invalid day!");
+                        $check = 0;
+                    } else{
+                        $check = 1;
+                    }
+                    
                 } else {
                     print("You must select a month!");
                     $check = 0;
                 }
             }
+            
             if (array_key_exists("year", $_GET) && $check != 0){
                 //print("year = $year");
             }
@@ -264,18 +283,7 @@
                 }
                 print("$month/$year.");
                 print("<br><br>");
-                switch ($month){
-                    case 1 : case 3 : case 5 : case 7 : case 8 : case 10 : case 12 : 
-                        $numberOfDays = 31;                        break;
-                    case 4 : case 6 : case 9 : case 11 :
-                        $numberOfDays = 30;                        break;
-                    case 2 : {
-                        if (($year%4 == 0 && $year%100!=0) || ($year%400==0)){
-                            $numberOfDays = 29;
-                        } else $numberOfDays = 28;
-                    }
-                default : break;
-                }
+                
                 print("This month has $numberOfDays days!");
             }
             
