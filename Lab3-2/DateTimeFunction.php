@@ -62,19 +62,61 @@
                 $day = substr($date, 0, 2);
                 $month = substr($date, 3,2);
                 $year = substr($date, 6,4);
+                //print "$date $day $month $year";
                 //strtot
-                return date('d/m/Y' , strtotime($date));
+                return date('l, F d, Y' , mktime(0,0,0,$month,$day,$year));
+            }
+            function getDaysBetweenDates($date1, $date2){
+                $day1 = substr($date1, 0, 2);
+                $month1 = substr($date1, 3,2);
+                $year1 = substr($date1, 6,4);
+                
+                $day2 = substr($date2, 0, 2);
+                $month2 = substr($date2, 3,2);
+                $year2 = substr($date2, 6,4);
+                //print date(DATE_ATOM, mktime(0,0,0,$month1,$day1,$year1));
+                $date1inTime = strtotime(date(DATE_ATOM, mktime(0,0,0,$month1,$day1,$year1)));
+                $date2inTime = strtotime(date(DATE_ATOM, mktime(0,0,0,$month2,$day2,$year2)));
+                //print"<br>";
+                //print "date 1 in time = $date1inTime";
+                
+                $datediff = $date1inTime - $date2inTime;
+                $datediff = abs($datediff);
+                 
+                $datediff = round($datediff / (60 * 60 * 24));
+                //print "datediff = $datediff";
+                return $datediff;
+            }
+            function age($date){
+                $year = substr($date, 6,4);
+                $currentYear = date("Y");
+                return $currentYear - $year;
             }
             
             
             
             if (isset($_GET['sub'])){
                 if(!$_GET['firstName'] =="" && !$_GET['secondName'] =="" && !$_GET['firstBD'] =="" && !$_GET['secondBD'] ==""){
+                    $firstName = $_GET["firstName"];
+                    $secondName = $_GET["secondName"];
                     $firstBD = $_GET["firstBD"];
                     $secondBD = $_GET["secondBD"];
                     if (checkValidDate($firstBD) != 0 && checkValidDate($secondBD) != 0){
                         $firstBDinLetter = getDateInLetter($firstBD);
-                        print "$firstBDinLetter";
+                        print "$firstName's birthday: $firstBD.<br>";
+                        print "$firstName's birthday in letter: $firstBDinLetter.<br>";
+                        $secondBDinLetter = getDateInLetter($secondBD);
+                        print "$secondName's birthday: $secondBD.<br>";
+                        print "$secondName's birthday in letter: $secondBDinLetter.<br>";
+                        
+                        $datediff = getDaysBetweenDates($firstBD, $secondBD);
+                        print "The difference in days between two dates: $datediff days.<br>";
+                        $age1 = age($firstBD);
+                        $age2 = age($secondBD);
+                        print "$firstName is $age1 years old and $secondName is $age2 years old.<br>";
+                        $yeardiff = $age1 - $age2;
+                        $yeardiff = abs($yeardiff);
+                        print "The difference years between $firstName and $secondName is $yeardiff.";
                     } else {
                         print "Invalid date!";
                     }
