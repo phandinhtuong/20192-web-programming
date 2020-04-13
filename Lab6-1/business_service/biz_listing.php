@@ -15,7 +15,14 @@
         <?php
         // establish the database connection
 
-        require_once('db_login.php');
+        # parameters for connecting to the "business_service" 
+        $username = "root";
+        $password = "";
+        $hostspec = "localhost";
+        $database = "business_service";
+        // $dbtype = 'pgsql';
+        // $dbtype = 'oci8';
+        $dbtype = 'mysqli';
 
         $pick_message = 'Click on a category to find business listings:';
         ?>

@@ -1,25 +1,20 @@
 <html>
     <head>
         <?php
-# parameters for connecting to the "business_service" 
+        # parameters for connecting to the "business_service" 
         $username = "root";
         $password = "";
         $hostspec = "localhost";
         $database = "business_service";
-// $dbtype = 'pgsql';
-// $dbtype = 'oci8';
+        // $dbtype = 'pgsql';
+        // $dbtype = 'oci8';
         $dbtype = 'mysqli';
 
-# DSN constructed from parameters 
+        # DSN constructed from parameters 
         $dsn = "$dbtype://$username:$password@$hostspec/$database";
 
-# Establish the connection
-#$db = DB::connect($dsn);
-        $connect = mysqli_connect($hostspec, $username, $password);
-
-        if (!$connect) {
-            die($connect->getMessage());
-        }
+        # Establish the connection
+        #$db = DB::connect($dsn);
         ?> 
 
         <title>
@@ -58,6 +53,11 @@
                     $sql = "insert into categories";
                     $sql .= " values ('$Cat_ID', '$Cat_Title', '$Cat_Desc')";
                     //print "$connect";
+                    $connect = mysqli_connect($hostspec, $username, $password);
+
+                    if (!$connect) {
+                        die($connect->getMessage());
+                    }
                     mysqli_select_db($connect, $database);
                     $result = mysqli_query($connect, $sql);
                     if ($result) {
@@ -65,6 +65,7 @@
                     } else {
                         print "Fail to insert";
                     }
+                    $connect->close();
                     //$db->commit();
                 } else {
                     echo "<p>Please make sure all fields are filled in ";
@@ -73,11 +74,16 @@
             }
         }
         // list categories reporting section
-// query all records in the table after any
-// insertion that may have occurred above
+        // query all records in the table after any
+        // insertion that may have occurred above
+        $connect = mysqli_connect($hostspec, $username, $password);
+
+        if (!$connect) {
+            die($connect->getMessage());
+        }
         mysqli_select_db($connect, $database);
         $sql = "select * from categories";
-//$result = $db->query($sql);
+        //$result = $db->query($sql);
         $result = mysqli_query($connect, $sql);
         if ($result) {
             
@@ -95,12 +101,13 @@
                 </tr>
 
                 <?php
-// display any records fetched from the database
-// plus an input line for a new category
+                // display any records fetched from the database
+                // plus an input line for a new category
 
                 while ($row = mysqli_fetch_row($result)) {
                     echo "<tr><td>$row[0]</td><td>$row[1]</td><td>$row[2]</td></tr>\n";
                 }
+                $connect->close();
                 ?>
                 <tr><td><input type="text" name="Cat_ID"    size="15" maxlength="10" /></td>
                     <td><input type="text" name="Cat_Title" size="40" maxlength="128" /></td>
