@@ -6,14 +6,14 @@
             $url = $_POST['url'];
             $phone = $_POST['phone'];
             //check valid email address
-            if (preg_match('/^[A-Za-z_]+@[A-Za-z.]+\.[A-Za-z]{2,}$/', $email)){
+            if (preg_match('/^[A-Za-z0-9_]+@[A-Za-z0-9.]+\.[A-Za-z]{2,}$/', $email)){
                 print "Valid email address: $email<br>";
             } else{
                 print "INVALID email address: $email<br>";
             }
             
             //check valid url address
-            if (preg_match('/^(http(s)?:\/\/)?[A-Za-z\.]+\.+[A-Za-z]{2,}$/', $url)){
+            if (preg_match('/^(http(s)?:\/\/)?[A-Za-z0-9\.]+\.+[A-Za-z]{2,}$/', $url)){
                 print "Valid url address: $url<br>";
             } else{
                 print "INVALID url address: $url<br>";

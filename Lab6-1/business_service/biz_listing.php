@@ -14,7 +14,6 @@
 
         <?php
         // establish the database connection
-
         # parameters for connecting to the "business_service" 
         $username = "root";
         $password = "";
@@ -34,33 +33,52 @@
                         <p>
                             <?php
                             // build the scrolling pick list for the categories
+                            $connect = mysqli_connect($hostspec, $username, $password);
+                            if (!$connect) {
+                                die($connect->getMessage());
+                            }
                             $sql = "SELECT * FROM categories";
-                            $result = $db->query($sql);
-                            if (DB::isError($result))
-                                die($result->getMessage());
-                            while ($row = $result->fetchRow()) {
-                                if (DB::isError($row))
-                                    die($row->getMessage());
+                            mysqli_select_db($connect, $database);
+                            $result = mysqli_query($connect, $sql);
+                            if ($result) {
+                                // print 'ok select';
+                            } else {
+                                print "Fail to $sql";
+                            }
+
+                            while ($row = mysqli_fetch_row($result)) {
+
+
                                 echo '<tr><td class="formlabel">';
-                                echo "<a href=\"$PHP_SELF?cat_id=$row[0]\">";
+                                echo "<a href=\"biz_listing.php?cat_id=$row[0]\">";
                                 echo "$row[1]</a></td></tr>\n";
                             }
+                            $connect->close();
                             ?>
                     </table>
                 </td>
                 <td valign="top">
                     <table border=1>
                         <?php
-                        if ($cat_id) {
+                        if (isset($cat_id)) {
+                            $connect = mysqli_connect($hostspec, $username, $password);
+                            if (!$connect) {
+                                die($connect->getMessage());
+                            }
+                            print "cat_id = $cat_id";
+                            mysqli_select_db($connect, $database);
                             $sql = "SELECT * FROM businesses b, biz_categories bc where";
-                            $sql .= " category_id = '$cat_id'";
-                            $sql .= " and b.business_id = bc.business_id";
-                            $result = $db->query($sql);
-                            if (DB::isError($result))
-                                die($result->getMessage());
-                            while ($row = $result->fetchRow()) {
-                                if (DB::isError($row))
-                                    die($row->getMessage());
+                            $sql .= " categoryid = '$cat_id'";
+                            $sql .= " and b.businessid = bc.businessid";
+                            $result = mysqli_query($connect, $sql);
+                            
+                            if ($result) {
+                                // print 'ok select';
+                            } else {
+                                print "Fail to $sql";
+                            }
+                            while ($row = mysqli_fetch_row($result)) {
+                                
                                 if ($color == 1) {
                                     $bg_shade = 'dark';
                                     $color = 0;
@@ -74,6 +92,7 @@
                                 }
                                 echo "</tr>\n";
                             }
+                            $connect->close();
                         }
                         ?>
                     </table>
