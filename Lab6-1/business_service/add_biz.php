@@ -73,7 +73,6 @@
             <table>
                 <tr>
                     <td class="picklist"><?= $pick_message?>
-
                         <p>
                             <select name="Biz_Categories[]" size="5" multiple>
                                 <?php
