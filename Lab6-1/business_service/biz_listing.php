@@ -47,8 +47,6 @@
                             }
 
                             while ($row = mysqli_fetch_row($result)) {
-
-
                                 echo '<tr><td class="formlabel">';
                                 echo "<a href=\"biz_listing.php?cat_id=$row[0]\">";
                                 echo "$row[1]</a></td></tr>\n";
@@ -60,12 +58,13 @@
                 <td valign="top">
                     <table border=1>
                         <?php
-                        if (isset($cat_id)) {
+                        if (isset($_GET['cat_id'])) {
+                            $cat_id = $_GET['cat_id'];
                             $connect = mysqli_connect($hostspec, $username, $password);
                             if (!$connect) {
                                 die($connect->getMessage());
                             }
-                            print "cat_id = $cat_id";
+                            //print "cat_id = $cat_id";
                             mysqli_select_db($connect, $database);
                             $sql = "SELECT * FROM businesses b, biz_categories bc where";
                             $sql .= " categoryid = '$cat_id'";
@@ -78,17 +77,9 @@
                                 print "Fail to $sql";
                             }
                             while ($row = mysqli_fetch_row($result)) {
-                                
-                                if ($color == 1) {
-                                    $bg_shade = 'dark';
-                                    $color = 0;
-                                } else {
-                                    $bg_shade = 'light';
-                                    $color = 1;
-                                }
                                 echo "<tr>\n";
                                 for ($i = 0; $i < count($row); $i++) {
-                                    echo "<td class=\"$bg_shade\">$row[$i]</td>\n";
+                                    echo "<td>$row[$i]</td>\n";
                                 }
                                 echo "</tr>\n";
                             }

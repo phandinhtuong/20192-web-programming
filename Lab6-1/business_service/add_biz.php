@@ -60,6 +60,12 @@
                 $biz_id = $row[0];
                 $connect->close();
             }
+        }else{
+            $Biz_Name = '';
+            $Biz_Address = '';
+            $Biz_City = '';
+            $Biz_Telephone = '';
+            $Biz_URL = '';
         }
         ?>
 
@@ -121,19 +127,19 @@
                     <td class="picklist">
                         <table>
                             <tr><td class="FormLabel">Business Name:</td>
-                                <td><input type="text" name="Biz_Name" size="40" maxlength="255"  /></td>
+                                <td><input type="text" name="Biz_Name" size="40" maxlength="255" value="<?=$Biz_Name?>"  /></td>
                             </tr>
                             <tr><td class="FormLabel">Address:</td>
-                                <td><input type="text" name="Biz_Address" size="40" maxlength="255" /></td>
+                                <td><input type="text" name="Biz_Address" size="40" maxlength="255" value="<?= $Biz_Address ?>" /></td>
                             </tr>
                             <tr><td class="FormLabel">City:</td>
-                                <td><input type="text" name="Biz_City" size="40" maxlength="128"  /></td>
+                                <td><input type="text" name="Biz_City" size="40" maxlength="128"  value="<?= $Biz_City ?>" /></td>
                             </tr>
                             <tr><td class="FormLabel">Telephone:</td>
-                                <td><input type="text" name="Biz_Telephone" size="40" maxlength="64"  /></td>
+                                <td><input type="text" name="Biz_Telephone" size="40" maxlength="64" value="<?= $Biz_Telephone ?>" /></td>
                             </tr>
                             <tr><td class="FormLabel">URL:</TD>
-                                <td><input type="text" name="Biz_URL" size="40" maxlength="255" /></td>
+                                <td><input type="text" name="Biz_URL" size="40" maxlength="255" value="<?= $Biz_URL ?>" /></td>
                             </tr>
                         </table>
                     </td>
