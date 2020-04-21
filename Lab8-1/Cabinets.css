@@ -1,0 +1,27 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Apr 21, 2020, 9:49:28 AM
+    Author     : ASUS
+*/
+
+H1{
+    text-align: center
+}
+P {
+    margin: 0.25in;
+    border: 0.25in solid black;
+    padding: 0.25in;
+    background: url(image/bond-paper.jpg)
+}
+body {
+    background: url(image/bricks.jpg)
+}
+.banner{
+    background: url(image/boards.jpg) repeat-x;
+    font-size: 50pt;
+    font-family: Arial Rounded MT Bold
+}

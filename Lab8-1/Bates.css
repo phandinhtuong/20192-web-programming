@@ -1,0 +1,27 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Apr 21, 2020, 10:01:41 AM
+    Author     : ASUS
+*/
+
+span{ float: left;
+      font-family: "Cushing Book";
+      font-size: 75pt
+}
+p.rhead{
+    text-align: right;
+    margin-right: 0.5in;
+    font-family: sans-serif
+}
+p.lhead{ font-family: sans-serif}
+p.body{ text-align: justify;
+      text-indent: 0.5in
+}
+p.foot{
+    margin-left: 60%;
+    line-height: 300%
+}
