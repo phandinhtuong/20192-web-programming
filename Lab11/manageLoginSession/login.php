@@ -13,14 +13,16 @@
             $username = $_POST['username'];
             $password = $_POST['password'];
             if (checkValidLogin($username, $password) == 1) {
-                print('Welcome!');
+                //print('Welcome!');
                 //session_start();
                 $_SESSION['username'] = $username;
+                header('Location: /Lab11/manageLoginSession/prefs-demo-session.php');
+                exit();
                 ?>
-                <form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="POST">
+<!--                <form action="<?php //echo $_SERVER['PHP_SELF'] ?>" method="POST">
                     <input type="hidden" name="logout" value="1">
                     <input type="submit" value="Log out">
-                </form>
+                </form>-->
 
                 <?php
             } else {

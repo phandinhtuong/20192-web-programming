@@ -48,9 +48,9 @@ function callHook() {
     $urlArray = array();
     $urlArray = explode("/", $url);
 
-    $controller = $urlArray[0];
+    $controller = $urlArray[2];
     array_shift($urlArray);
-    $action = $urlArray[0];
+    $action = $urlArray[2];
     array_shift($urlArray);
     $queryString = $urlArray;
 
