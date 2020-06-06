@@ -13,38 +13,28 @@ $sql = "SELECT * FROM user WHERE id = '" . $q . "'";
 
 $result = mysqli_query($con, $sql);
 
-//response xml
-echo '<?xml version="1.0" encoding="ISO-8859-1"?>
-<person>';
-while ($row = mysqli_fetch_array($result)) {
-    echo "<firstname>" . $row['firstname'] . "</firstname>";
-    echo "<lastname>" . $row['lastname'] . "</lastname>";
-    echo "<age>" . $row['age'] . "</age>";
-    echo "<hometown>" . $row['hometown'] . "</hometown>";
-    echo "<job>" . $row['job'] . "</job>";
-}
-echo "</person>";
+
 
 //response Text
-//echo "<table border='1'>
-//<tr>
-//<th>Firstname</th>
-//<th>Lastname</th>
-//<th>Age</th>
-//<th>Hometown</th>
-//<th>Job</th>
-//</tr>";
-//
-//while ($row = mysqli_fetch_array($result)) {
-//    echo "<tr>";
-//    echo "<td>" . $row['firstname'] . "</td>";
-//    echo "<td>" . $row['lastname'] . "</td>";
-//    echo "<td>" . $row['age'] . "</td>";
-//    echo "<td>" . $row['hometown'] . "</td>";
-//    echo "<td>" . $row['job'] . "</td>";
-//    echo "</tr>";
-//}
-//echo "</table>";
+echo "<table border='1'>
+<tr>
+<th>Firstname</th>
+<th>Lastname</th>
+<th>Age</th>
+<th>Hometown</th>
+<th>Job</th>
+</tr>";
+
+while ($row = mysqli_fetch_array($result)) {
+    echo "<tr>";
+    echo "<td>" . $row['firstname'] . "</td>";
+    echo "<td>" . $row['lastname'] . "</td>";
+    echo "<td>" . $row['age'] . "</td>";
+    echo "<td>" . $row['hometown'] . "</td>";
+    echo "<td>" . $row['job'] . "</td>";
+    echo "</tr>";
+}
+echo "</table>";
 
 mysqli_close($con);
 ?> 
