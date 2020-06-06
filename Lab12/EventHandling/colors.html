@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Mouse Over Colors</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h1 id="red">Red one</h1>
+        <h1 id="green">Green one</h1>
+        <h1 id="blue">Blue one</h1>
+        <script>
+            document.getElementById("red").onmouseover = function () {
+                mouseOverRed()
+            };
+            document.getElementById("red").onmouseout = function () {
+                mouseOutRed()
+            };
+            document.getElementById("green").onmouseover = function () {
+                mouseOverGreen()
+            };
+            document.getElementById("green").onmouseout = function () {
+                mouseOutGreen()
+            };
+            document.getElementById("blue").onmouseover = function () {
+                mouseOverBlue()
+            };
+            document.getElementById("blue").onmouseout = function () {
+                mouseOutBlue()
+            };
+
+            function mouseOverRed() {
+                document.getElementById("red").style.color = "red";
+            }
+
+            function mouseOutRed() {
+                document.getElementById("red").style.color = "black";
+            }
+            function mouseOverGreen() {
+                document.getElementById("green").style.color = "green";
+            }
+
+            function mouseOutGreen() {
+                document.getElementById("green").style.color = "black";
+            }
+            function mouseOverBlue() {
+                document.getElementById("blue").style.color = "blue";
+            }
+
+            function mouseOutBlue() {
+                document.getElementById("blue").style.color = "black";
+            }
+        </script>
+    </body>
+</html>
