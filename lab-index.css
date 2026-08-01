@@ -1,0 +1,70 @@
+body {
+    max-width: 960px;
+    margin: 40px auto;
+    padding: 0 20px 60px;
+    color: #202124;
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.5;
+}
+
+a {
+    color: #0645ad;
+}
+
+.course-index,
+.lab-page {
+    margin-top: 34px;
+    padding-top: 24px;
+    border-top: 1px solid #c8c8c8;
+}
+
+.course-index h1,
+.lab-page h1 {
+    margin-bottom: 8px;
+    font-size: 1.8rem;
+}
+
+.lab-links,
+.file-list {
+    padding-left: 24px;
+}
+
+.lab-links li,
+.file-list li {
+    margin: 8px 0;
+}
+
+.lab-links a,
+.file-list a {
+    font-weight: bold;
+}
+
+.file-list small {
+    display: block;
+    color: #666;
+}
+
+.file-group {
+    margin-top: 30px;
+}
+
+.file-group h2 {
+    font-size: 1.25rem;
+}
+
+.note {
+    padding: 12px 15px;
+    border-left: 4px solid #d49b00;
+    background: #fff8dc;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 600px) {
+    body {
+        margin-top: 20px;
+    }
+}
