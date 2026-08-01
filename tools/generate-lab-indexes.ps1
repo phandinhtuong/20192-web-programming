@@ -53,7 +53,7 @@ function New-FileList([array] $files, [string] $labName, [string] $kind) {
             $action = 'Open original file'
         } elseif ($file.Extension.ToLowerInvariant() -eq '.php') {
             $runnerTarget = [Uri]::EscapeDataString("$labName/$($relativePath -replace '\\', '/')")
-            $href = "../php-runner.html?ui=6&file=$runnerTarget"
+            $href = "../php-runner.html?ui=7&file=$runnerTarget"
             $action = 'Run live browser simulation'
         } else {
             $href = $encodedRelativePath
@@ -125,7 +125,7 @@ foreach ($labName in $labDirectories) {
         <p>This page indexes the original files in this lab. No exercise code has been rewritten.</p>
 $sectionMarkup
     </main>
-    <script src="../lab-navigation.js?v=6" data-course-navigation defer></script>
+    <script src="../lab-navigation.js?v=7" data-course-navigation defer></script>
 </body>
 </html>
 "@

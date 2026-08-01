@@ -79,7 +79,7 @@ async function navigateToRunnerUrl(url, addHistory) {
 
 function navigateWithinRunner(file, method, fields) {
     const url = new URL('php-runner.html', courseRoot);
-    url.searchParams.set('ui', '6');
+    url.searchParams.set('ui', '7');
     url.searchParams.set('file', normalizeTarget(file));
     url.searchParams.set('method', method);
     if (fields.toString()) {
@@ -156,13 +156,14 @@ async function runPHP(file, method, fields) {
         const query = method === 'GET' ? fields.toString() : '';
         const post = method === 'POST' ? fields.toString() : '';
         const virtualFile = `/tmp/course/${activeFile}`;
+        const phpSelf = `${courseRoot.pathname}${activeFile}`.replace(/\/{2,}/g, '/');
         const code = `<?php
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING);
 require_once '/tmp/course-runtime/database.php';
 $_SERVER['REQUEST_METHOD'] = '${method}';
-$_SERVER['PHP_SELF'] = '/${escapePHP(activeFile)}';
+$_SERVER['PHP_SELF'] = '${escapePHP(phpSelf)}';
 parse_str(base64_decode('${encodeBase64(query)}'), $_GET);
 parse_str(base64_decode('${encodeBase64(post)}'), $_POST);
 $_REQUEST = array_merge($_GET, $_POST);
