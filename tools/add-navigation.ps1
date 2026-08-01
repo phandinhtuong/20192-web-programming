@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 $closingBody = New-Object System.Text.RegularExpressions.Regex('</body>', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
-$navigationVersion = 'v=4'
+$navigationVersion = 'v=6'
 $navigationSource = New-Object System.Text.RegularExpressions.Regex('(?<prefix>src=["''][^"'']*lab-navigation\.js)(?:\?v=[^"'']*)?(?<suffix>["''])', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
 $updated = 0
 $unchanged = 0

@@ -53,8 +53,17 @@ async function boot() {
         await playground.isReady;
     }
 
+    await stageRuntimeCompatibility();
     reloadButton.disabled = false;
     await runPHP(targetFile, requestedMethod, requestedFields);
+}
+
+async function stageRuntimeCompatibility() {
+    const response = await fetch(new URL('php-database-compat.php', courseRoot));
+    if (!response.ok) throw new Error('The browser database compatibility layer could not be loaded.');
+    const data = new Uint8Array(await response.arrayBuffer());
+    await playground.mkdirTree('/tmp/course-runtime');
+    await playground.writeFile('/tmp/course-runtime/database.php', data);
 }
 
 async function navigateToRunnerUrl(url, addHistory) {
@@ -70,7 +79,7 @@ async function navigateToRunnerUrl(url, addHistory) {
 
 function navigateWithinRunner(file, method, fields) {
     const url = new URL('php-runner.html', courseRoot);
-    url.searchParams.set('ui', '4');
+    url.searchParams.set('ui', '6');
     url.searchParams.set('file', normalizeTarget(file));
     url.searchParams.set('method', method);
     if (fields.toString()) {
@@ -107,10 +116,24 @@ async function stageLabFiles(lab) {
         statusDetail.textContent = `Preparing ${index + 1} of ${labFiles.length}: ${path}`;
         const response = await fetch(new URL(encodePath(path), courseRoot));
         if (!response.ok) throw new Error(`Unable to load ${path}.`);
-        const data = new Uint8Array(await response.arrayBuffer());
+        let data = new Uint8Array(await response.arrayBuffer());
+        if (path.startsWith('Lab6-1/') && path.toLowerCase().endsWith('.php')) {
+            const source = new TextDecoder().decode(data).replace(
+                /\bmysqli_(connect|select_db|query|fetch_row|close)\b/g,
+                'course_mysqli_$1'
+            );
+            data = new TextEncoder().encode(source);
+        }
         const virtualPath = `/tmp/course/${path}`;
         await playground.mkdirTree(virtualPath.substring(0, virtualPath.lastIndexOf('/')));
         await playground.writeFile(virtualPath, data);
+    }
+
+    if (lab === 'Lab6-2') {
+        await playground.writeFile(
+            '/tmp/course/Lab6-2/DB.php',
+            new TextEncoder().encode('<?php // PEAR DB compatibility is preloaded by the course runtime. ?>')
+        );
     }
 }
 
@@ -137,6 +160,7 @@ async function runPHP(file, method, fields) {
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING);
+require_once '/tmp/course-runtime/database.php';
 $_SERVER['REQUEST_METHOD'] = '${method}';
 $_SERVER['PHP_SELF'] = '/${escapePHP(activeFile)}';
 parse_str(base64_decode('${encodeBase64(query)}'), $_GET);
