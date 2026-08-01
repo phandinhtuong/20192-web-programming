@@ -43,7 +43,7 @@ function New-FileList([array] $files, [string] $labName, [string] $kind) {
 
         if ($kind -eq 'browser' -and $file.Extension.ToLowerInvariant() -eq '.xml') {
             $viewerTarget = [Uri]::EscapeDataString("$labName/$($relativePath -replace '\\', '/')")
-            $href = "../document-viewer.html?file=$viewerTarget"
+            $href = "../document-viewer.html?viewer=5&file=$viewerTarget"
             $action = 'Open original page'
         } elseif ($kind -eq 'browser') {
             $href = $encodedRelativePath
