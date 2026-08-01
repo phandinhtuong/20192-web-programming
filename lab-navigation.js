@@ -295,6 +295,9 @@
 
                     Array.prototype.forEach.call(section.querySelectorAll('.file-list a'), function (lessonLink) {
                         var pageUrl = new URL(lessonLink.getAttribute('href'), indexUrl);
+                        if (headingText === 'PHP source') {
+                            pageUrl.searchParams.set('ui', '4');
+                        }
                         var lesson = {
                             href: pageUrl.href,
                             path: pageUrl.pathname,
@@ -476,6 +479,7 @@
     function openPHPRunner(destination, method, fields) {
         var file = decodeURIComponent(destination.pathname.substring(courseRoot.pathname.length));
         var runnerUrl = new URL('php-runner.html', courseRoot);
+        runnerUrl.searchParams.set('ui', '4');
         runnerUrl.searchParams.set('file', file);
         runnerUrl.searchParams.set('method', method);
         if (fields.toString()) {
