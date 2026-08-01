@@ -292,9 +292,15 @@
         container.textContent = '';
 
         var overview = document.createElement('a');
-        overview.className = 'exercise-link overview';
+        var isOverviewActive = directory === labName &&
+            decodeURIComponent(currentUrl.pathname) === decodeURIComponent(indexUrl.pathname) &&
+            !simulatedFile;
+        overview.className = 'exercise-link overview' + (isOverviewActive ? ' active' : '');
         overview.href = indexUrl.href;
         overview.innerHTML = '<span class="number">i</span><span class="text">Lab overview</span>';
+        if (isOverviewActive) {
+            overview.setAttribute('aria-current', 'page');
+        }
         container.appendChild(overview);
 
         lessons.forEach(function (lesson, index) {
