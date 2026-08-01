@@ -14,7 +14,12 @@
     var labName = pathParts[0] || 'Labs';
     var pageName = (pathParts[pathParts.length - 1] || '').replace(/\.[^.]+$/, '');
     var labUrl = new URL(encodeURIComponent(labName) + '/', courseRoot);
-    var sourceUrl = 'https://github.com/phandinhtuong/20192-web-programming/tree/phan-dinh-tuong-20164582/' + encodeURIComponent(labName);
+    var repositoryUrl = 'https://github.com/phandinhtuong/20192-web-programming/tree/phan-dinh-tuong-20164582';
+    var labDirectories = [
+        'Lab1', 'Lab2', 'Lab3-1', 'Lab3-2', 'Lab4', 'Lab5', 'Lab6-1', 'Lab6-2',
+        'Lab7', 'Lab8-1', 'Lab8-2', 'Lab9', 'Lab10', 'Lab11', 'Lab12'
+    ];
+    var labCache = {};
 
     var originalBodyPadding = document.body.style.getPropertyValue('padding-left');
     var originalBodyPaddingPriority = document.body.style.getPropertyPriority('padding-left');
@@ -56,18 +61,32 @@
         '.sidebar-head{padding:18px 16px 14px;border-bottom:1px solid var(--rw-line);background:#fafafb}',
         '.overline{margin:0 0 5px;color:#92959c;font-size:9px;font-weight:700;letter-spacing:.11em;text-transform:uppercase}',
         '.sidebar h2{margin:0;color:#44464c;font-size:16px;line-height:1.2;letter-spacing:-.01em}',
-        '.side-nav{padding:10px 9px 78px}',
-        '.side-label{margin:18px 9px 7px;color:#9a9da4;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}',
+        '.side-nav{padding:10px 9px 18px}',
+        '.side-label{margin:16px 9px 7px;color:#9a9da4;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}',
         '.side-link,.exercise-link{display:flex;align-items:center;gap:9px;min-height:36px;padding:7px 9px;border-radius:4px;color:#55585f}',
         '.side-link:hover,.side-link:focus,.exercise-link:hover,.exercise-link:focus{color:var(--rw-purple);background:#efedf9;text-decoration:none}',
         '.side-icon{display:grid;flex:0 0 23px;height:23px;place-items:center;border:1px solid #dadce1;border-radius:5px;color:#797d85;background:#fff;font-size:10px;font-weight:700}',
-        '.exercise-link{gap:9px;min-height:36px;padding-top:6px;padding-bottom:6px;font-size:13px}',
-        '.exercise-link .number{display:grid;flex:0 0 21px;height:21px;place-items:center;border-radius:4px;color:#8b8e96;background:#e9eaed;font-size:9px}',
+        '.lab-menu{display:grid;gap:2px}',
+        '.lab-group{min-width:0}',
+        '.lab-row{display:flex;align-items:center;gap:9px;width:100%;min-height:36px;padding:6px 8px;border:0;border-radius:4px;color:#55585f;background:transparent;cursor:pointer;font:600 12px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;text-align:left}',
+        '.lab-row:hover,.lab-row:focus{color:var(--rw-purple);background:#efedf9;outline:0}',
+        '.lab-row.current{color:var(--rw-purple);font-weight:700}',
+        '.lab-number{display:grid;flex:0 0 25px;height:24px;place-items:center;border:1px solid #dadce1;border-radius:5px;color:#7f838b;background:#fff;font-size:9px;font-weight:700}',
+        '.lab-row.current .lab-number{border-color:#c9c4ed;color:var(--rw-purple);background:#f2f0fb}',
+        '.lab-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+        '.chevron{margin-left:auto;color:#9b9ea5;font-size:16px;transition:transform .15s}',
+        '.lab-row[aria-expanded="true"] .chevron{transform:rotate(90deg)}',
+        '.lesson-list{margin:2px 0 5px 16px;padding:2px 0 3px 10px;border-left:1px solid #dddbe9}',
+        '.lesson-list[hidden]{display:none}',
+        '.exercise-link{gap:8px;min-height:31px;padding:5px 7px;font-size:12px}',
+        '.exercise-link .number{display:grid;flex:0 0 20px;height:20px;place-items:center;border-radius:4px;color:#8b8e96;background:#e9eaed;font-size:8px}',
         '.exercise-link .text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
         '.exercise-link.active{color:var(--rw-purple);background:var(--rw-purple-soft);font-weight:650}',
         '.exercise-link.active .number{color:#fff;background:var(--rw-purple)}',
+        '.exercise-link.php .number{color:#7b52a8;background:#eee7f5}',
+        '.exercise-link.overview{color:#6a6d74;font-weight:650}',
         '.loading{padding:10px;color:#8a909a;font-size:12px}',
-        '.source-link{position:absolute;right:9px;bottom:12px;left:9px;border:1px solid #dcdee3;background:#fff}',
+        '.source-link{margin-top:15px;border:1px solid #dcdee3;background:#fff}',
         '.overlay{display:none;position:fixed;z-index:1;inset:60px 0 0;border:0;background:rgba(17,24,39,.32);cursor:pointer}',
         '@media(max-width:900px){.bar{gap:10px;min-height:56px;padding:0 10px}.menu-toggle{display:block}.brand{flex:0 auto;align-self:auto;padding:0;border:0;font-size:0}.brand:after{content:"Web Programming";font-size:14px}.mark{width:30px;height:30px}.crumbs{display:none}.pager{margin-left:auto;margin-right:0}.pager a{min-height:32px;padding:5px 9px}.pager .label{display:none}.sidebar{top:57px;z-index:4;transform:translateX(-100%);box-shadow:10px 0 30px rgba(20,30,50,.16)}.sidebar.open{transform:translateX(0)}.overlay.open{display:block}}',
         '@media(max-width:460px){.brand:after{content:"2019.2"}.pager a{padding:5px 8px}}',
@@ -81,14 +100,13 @@
         '    <span class="pager"><a id="previous-page" hidden><span aria-hidden="true">&larr;&nbsp;</span><span class="label">Previous</span></a><a id="next-page" hidden><span class="label">Next</span><span aria-hidden="true">&nbsp;&rarr;</span></a></span>',
         '  </div>',
         '</header>',
-        '<aside class="sidebar" id="course-sidebar" aria-label="Lab exercises">',
-        '  <div class="sidebar-head"><p class="overline">Current lab</p><h2>' + escapeHtml(labName) + '</h2></div>',
+        '<aside class="sidebar" id="course-sidebar" aria-label="Course labs and lessons">',
+        '  <div class="sidebar-head"><p class="overline">2019.2 course</p><h2>Labs &amp; lessons</h2></div>',
         '  <div class="side-nav">',
         '    <a class="side-link" href="' + courseRoot.href + '"><span class="side-icon" aria-hidden="true">H</span><span>All labs</span></a>',
-        '    <a class="side-link" href="' + labUrl.href + '"><span class="side-icon" aria-hidden="true">L</span><span>Lab overview</span></a>',
-        '    <p class="side-label">Browser exercises</p>',
-        '    <div id="exercise-links"><p class="loading">Loading pages...</p></div>',
-        '    <a class="side-link source-link" href="' + sourceUrl + '"><span class="side-icon" aria-hidden="true">G</span><span>Original source</span></a>',
+        '    <p class="side-label">Course labs</p>',
+        '    <div class="lab-menu">' + buildLabMenu() + '</div>',
+        '    <a class="side-link source-link" href="' + repositoryUrl + '"><span class="side-icon" aria-hidden="true">G</span><span>Original repository</span></a>',
         '  </div>',
         '</aside>',
         '<button class="overlay" id="menu-overlay" type="button" aria-label="Close lab navigation"></button>'
@@ -125,39 +143,31 @@
         }
     });
 
-    fetch(labUrl.href)
-        .then(function (response) {
-            if (!response.ok) {
-                throw new Error('Unable to load lab index');
+    Array.prototype.forEach.call(shadow.querySelectorAll('.lab-row'), function (button) {
+        button.addEventListener('click', function () {
+            var selectedLab = button.getAttribute('data-lab');
+            var wasExpanded = button.getAttribute('aria-expanded') === 'true';
+            collapseLabs();
+            if (!wasExpanded) {
+                expandLab(selectedLab);
             }
-            return response.text();
-        })
-        .then(function (html) {
-            var indexDocument = new DOMParser().parseFromString(html, 'text/html');
-            var links = Array.prototype.slice.call(indexDocument.querySelectorAll('.file-group:first-of-type .file-list a'));
-            var pages = links.map(function (link) {
-                var pageUrl = new URL(link.getAttribute('href'), labUrl);
-                return {
-                    href: pageUrl.href,
-                    path: pageUrl.pathname,
-                    label: link.textContent.trim()
-                };
-            });
-            var currentIndex = pages.findIndex(function (page) {
-                return decodeURIComponent(page.path) === decodeURIComponent(currentUrl.pathname);
-            });
-
-            populateSidebar(pages, currentIndex);
-            if (currentIndex > 0) {
-                configurePager(shadow.getElementById('previous-page'), pages[currentIndex - 1]);
-            }
-            if (currentIndex >= 0 && currentIndex < pages.length - 1) {
-                configurePager(shadow.getElementById('next-page'), pages[currentIndex + 1]);
-            }
-        })
-        .catch(function () {
-            shadow.getElementById('exercise-links').innerHTML = '<p class="loading">Page list unavailable.</p>';
         });
+    });
+
+    expandLab(labName);
+    loadLab(labName).then(function (data) {
+        var currentIndex = data.browserPages.findIndex(function (page) {
+            return decodeURIComponent(page.path) === decodeURIComponent(currentUrl.pathname);
+        });
+        if (currentIndex > 0) {
+            configurePager(shadow.getElementById('previous-page'), data.browserPages[currentIndex - 1]);
+        }
+        if (currentIndex >= 0 && currentIndex < data.browserPages.length - 1) {
+            configurePager(shadow.getElementById('next-page'), data.browserPages[currentIndex + 1]);
+        }
+    }).catch(function () {
+        // The expanded submenu displays its own unavailable state.
+    });
 
     function applyLayout(mediaQuery) {
         if (mediaQuery.matches) {
@@ -181,24 +191,126 @@
         menuToggle.setAttribute('aria-label', isOpen ? 'Close lab navigation' : 'Open lab navigation');
     }
 
-    function populateSidebar(pages, currentIndex) {
-        var container = shadow.getElementById('exercise-links');
+    function buildLabMenu() {
+        return labDirectories.map(function (directory) {
+            var isCurrent = directory === labName;
+            var listId = 'lessons-' + directory.replace(/[^a-z0-9]/gi, '-');
+            return [
+                '<div class="lab-group">',
+                '  <button class="lab-row' + (isCurrent ? ' current' : '') + '" type="button" data-lab="' + directory + '" aria-expanded="' + String(isCurrent) + '" aria-controls="' + listId + '">',
+                '    <span class="lab-number">' + formatLabNumber(directory) + '</span>',
+                '    <span class="lab-text">' + directory + '</span>',
+                '    <span class="chevron" aria-hidden="true">&#8250;</span>',
+                '  </button>',
+                '  <div class="lesson-list" id="' + listId + '"' + (isCurrent ? '' : ' hidden') + '><p class="loading">Loading lessons...</p></div>',
+                '</div>'
+            ].join('');
+        }).join('');
+    }
+
+    function formatLabNumber(directory) {
+        return directory.replace(/^Lab/, '').replace('-', '.');
+    }
+
+    function collapseLabs() {
+        Array.prototype.forEach.call(shadow.querySelectorAll('.lab-row'), function (button) {
+            button.setAttribute('aria-expanded', 'false');
+            shadow.getElementById(button.getAttribute('aria-controls')).hidden = true;
+        });
+    }
+
+    function expandLab(directory) {
+        var button = shadow.querySelector('.lab-row[data-lab="' + directory + '"]');
+        if (!button) {
+            return;
+        }
+        button.setAttribute('aria-expanded', 'true');
+        shadow.getElementById(button.getAttribute('aria-controls')).hidden = false;
+        loadLab(directory).then(function (data) {
+            populateLessons(directory, data.lessons);
+        }).catch(function () {
+            getLessonContainer(directory).innerHTML = '<p class="loading">Lessons unavailable.</p>';
+        });
+    }
+
+    function loadLab(directory) {
+        if (labCache[directory]) {
+            return labCache[directory];
+        }
+
+        var indexUrl = new URL(encodeURIComponent(directory) + '/', courseRoot);
+        labCache[directory] = fetch(indexUrl.href)
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Unable to load ' + directory);
+                }
+                return response.text();
+            })
+            .then(function (html) {
+                var indexDocument = new DOMParser().parseFromString(html, 'text/html');
+                var lessons = [];
+                var browserPages = [];
+
+                Array.prototype.forEach.call(indexDocument.querySelectorAll('.file-group'), function (section) {
+                    var heading = section.querySelector('h2');
+                    var headingText = heading ? heading.textContent.trim() : '';
+                    if (headingText !== 'Browser pages' && headingText !== 'PHP source') {
+                        return;
+                    }
+
+                    Array.prototype.forEach.call(section.querySelectorAll('.file-list a'), function (lessonLink) {
+                        var pageUrl = new URL(lessonLink.getAttribute('href'), indexUrl);
+                        var lesson = {
+                            href: pageUrl.href,
+                            path: pageUrl.pathname,
+                            label: lessonLink.textContent.trim(),
+                            type: headingText === 'PHP source' ? 'php' : 'browser'
+                        };
+                        lessons.push(lesson);
+                        if (lesson.type === 'browser') {
+                            browserPages.push(lesson);
+                        }
+                    });
+                });
+
+                return { lessons: lessons, browserPages: browserPages };
+            });
+
+        return labCache[directory];
+    }
+
+    function getLessonContainer(directory) {
+        var button = shadow.querySelector('.lab-row[data-lab="' + directory + '"]');
+        return shadow.getElementById(button.getAttribute('aria-controls'));
+    }
+
+    function populateLessons(directory, lessons) {
+        var container = getLessonContainer(directory);
+        var indexUrl = new URL(encodeURIComponent(directory) + '/', courseRoot);
         container.textContent = '';
-        pages.forEach(function (page, index) {
+
+        var overview = document.createElement('a');
+        overview.className = 'exercise-link overview';
+        overview.href = indexUrl.href;
+        overview.innerHTML = '<span class="number">i</span><span class="text">Lab overview</span>';
+        container.appendChild(overview);
+
+        lessons.forEach(function (lesson, index) {
             var link = document.createElement('a');
-            link.className = 'exercise-link' + (index === currentIndex ? ' active' : '');
-            link.href = page.href;
-            link.title = page.label;
-            if (index === currentIndex) {
+            var isActive = directory === labName && decodeURIComponent(lesson.path) === decodeURIComponent(currentUrl.pathname);
+            link.className = 'exercise-link ' + lesson.type + (isActive ? ' active' : '');
+            link.href = lesson.href;
+            link.title = lesson.label;
+            if (isActive) {
                 link.setAttribute('aria-current', 'page');
             }
 
             var number = document.createElement('span');
             number.className = 'number';
-            number.textContent = String(index + 1).padStart(2, '0');
+            number.textContent = lesson.type === 'php' ? 'P' : String(index + 1).padStart(2, '0');
             var text = document.createElement('span');
             text.className = 'text';
-            text.textContent = page.label;
+            text.textContent = lesson.label;
             link.appendChild(number);
             link.appendChild(text);
             container.appendChild(link);
