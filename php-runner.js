@@ -6,7 +6,6 @@ const requestedFile = params.get('file') || '';
 const requestedMethod = (params.get('method') || 'GET').toUpperCase() === 'POST' ? 'POST' : 'GET';
 const requestedFields = new URLSearchParams(params.get('data') || '');
 const targetFile = normalizeTarget(requestedFile);
-const targetLab = targetFile.split('/')[0];
 const outputFrame = document.getElementById('lesson-output');
 const engineFrame = document.getElementById('php-engine');
 const status = document.getElementById('runtime-status');
@@ -16,14 +15,25 @@ const lessonTitle = document.getElementById('lesson-title');
 const reloadButton = document.getElementById('reload-lesson');
 let activeFile = targetFile;
 let playground;
+let manifestPromise;
+const labStagePromises = new Map();
 
 lessonTitle.textContent = lessonName(targetFile);
 document.title = `${lessonName(targetFile)} · PHP Lesson Simulation`;
 
 reloadButton.addEventListener('click', () => runPHP(activeFile, 'GET', new URLSearchParams()));
 
-boot().catch(error => {
+const bootPromise = boot();
+bootPromise.catch(error => {
     showError(error);
+});
+
+window.addEventListener('course:php-navigate', event => {
+    navigateToRunnerUrl(new URL(event.detail.url), true);
+});
+
+window.addEventListener('popstate', () => {
+    navigateToRunnerUrl(new URL(window.location.href), false);
 });
 
 async function boot() {
@@ -43,16 +53,50 @@ async function boot() {
         await playground.isReady;
     }
 
-    setStatus('Loading course files', `Preparing ${targetLab} inside the PHP runtime…`);
-    await stageLabFiles(targetLab);
     reloadButton.disabled = false;
     await runPHP(targetFile, requestedMethod, requestedFields);
 }
 
+async function navigateToRunnerUrl(url, addHistory) {
+    const file = normalizeTarget(url.searchParams.get('file') || '');
+    const method = (url.searchParams.get('method') || 'GET').toUpperCase() === 'POST' ? 'POST' : 'GET';
+    const fields = new URLSearchParams(url.searchParams.get('data') || '');
+    if (addHistory) {
+        window.history.pushState({}, '', url);
+    }
+    await bootPromise;
+    await runPHP(file, method, fields);
+}
+
+function navigateWithinRunner(file, method, fields) {
+    const url = new URL('php-runner.html', courseRoot);
+    url.searchParams.set('file', normalizeTarget(file));
+    url.searchParams.set('method', method);
+    if (fields.toString()) {
+        url.searchParams.set('data', fields.toString());
+    }
+    window.history.pushState({}, '', url);
+    window.dispatchEvent(new CustomEvent('course:location-sync', {
+        detail: { url: url.href }
+    }));
+    return runPHP(file, method, fields);
+}
+
+function ensureLabFiles(lab) {
+    if (!labStagePromises.has(lab)) {
+        labStagePromises.set(lab, stageLabFiles(lab));
+    }
+    return labStagePromises.get(lab);
+}
+
 async function stageLabFiles(lab) {
-    const manifestResponse = await fetch(new URL('course-files.json', courseRoot));
-    if (!manifestResponse.ok) throw new Error('The course runtime manifest could not be loaded.');
-    const manifest = await manifestResponse.json();
+    if (!manifestPromise) {
+        manifestPromise = fetch(new URL('course-files.json', courseRoot)).then(response => {
+            if (!response.ok) throw new Error('The course runtime manifest could not be loaded.');
+            return response.json();
+        });
+    }
+    const manifest = await manifestPromise;
     const labFiles = manifest.files.filter(path => path.startsWith(`${lab}/`));
     if (!labFiles.length) throw new Error(`No runtime files were found for ${lab}.`);
 
@@ -72,14 +116,23 @@ async function stageLabFiles(lab) {
 async function runPHP(file, method, fields) {
     activeFile = normalizeTarget(file);
     lessonTitle.textContent = lessonName(activeFile);
+    document.title = `${lessonName(activeFile)} · PHP Lesson Simulation`;
     reloadButton.disabled = true;
-    setStatus('Running lesson', `Executing ${activeFile}…`);
-    runtimeLabel.textContent = 'Executing PHP';
 
-    const query = method === 'GET' ? fields.toString() : '';
-    const post = method === 'POST' ? fields.toString() : '';
-    const virtualFile = `/tmp/course/${activeFile}`;
-    const code = `<?php
+    const activeLab = activeFile.split('/')[0];
+    if (!labStagePromises.has(activeLab)) {
+        setStatus('Loading course files', `Preparing ${activeLab} inside the existing PHP runtime…`);
+    }
+
+    try {
+        await ensureLabFiles(activeLab);
+        setStatus('Running lesson', `Executing ${activeFile}…`);
+        runtimeLabel.textContent = 'Executing PHP';
+
+        const query = method === 'GET' ? fields.toString() : '';
+        const post = method === 'POST' ? fields.toString() : '';
+        const virtualFile = `/tmp/course/${activeFile}`;
+        const code = `<?php
 ini_set('display_errors', '1');
 error_reporting(E_ALL & ~E_DEPRECATED);
 $_SERVER['REQUEST_METHOD'] = '${method}';
@@ -91,7 +144,6 @@ chdir(dirname('${escapePHP(virtualFile)}'));
 include '${escapePHP(virtualFile)}';
 ?>`;
 
-    try {
         const response = await playground.run({ code });
         renderOutput(response.text || '', response.errors || '', activeFile);
         status.classList.add('ready');
@@ -134,7 +186,7 @@ function connectRenderedPage(renderedFile) {
             event.preventDefault();
             const destination = decodeURIComponent(actionUrl.pathname.substring(courseRoot.pathname.length));
             const method = (form.getAttribute('method') || 'GET').toUpperCase();
-            runPHP(destination, method, new URLSearchParams(new FormData(form)));
+            navigateWithinRunner(destination, method, new URLSearchParams(new FormData(form)));
         });
     });
 
@@ -144,7 +196,7 @@ function connectRenderedPage(renderedFile) {
             if (destinationUrl.origin !== window.location.origin || !destinationUrl.pathname.toLowerCase().endsWith('.php')) return;
             event.preventDefault();
             const destination = decodeURIComponent(destinationUrl.pathname.substring(courseRoot.pathname.length));
-            runPHP(destination, 'GET', destinationUrl.searchParams);
+            navigateWithinRunner(destination, 'GET', destinationUrl.searchParams);
         });
     });
 }

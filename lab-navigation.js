@@ -11,7 +11,7 @@
     var currentUrl = new URL(window.location.href);
     var simulatedFile = currentUrl.searchParams.get('file');
     var relativePath = simulatedFile || decodeURIComponent(currentUrl.pathname.substring(courseRoot.pathname.length));
-    var currentKey = decodeURIComponent(currentUrl.pathname + currentUrl.search);
+    var currentKey = navigationKey(currentUrl);
     var pathParts = relativePath.split('/').filter(Boolean);
     var isCourseHome = pathParts.length === 0 || relativePath.toLowerCase() === 'index.html';
     var labName = isCourseHome ? 'Labs' : pathParts[0];
@@ -134,7 +134,18 @@
         setMenuOpen(false);
     });
     shadow.addEventListener('click', function (event) {
-        if (event.target.closest && event.target.closest('.sidebar a') && !desktopLayout.matches) {
+        var link = event.target.closest && event.target.closest('a[href]');
+        if (link && isPHPRunnerUrl(currentUrl)) {
+            var destination = new URL(link.href);
+            if (isPHPRunnerUrl(destination) && destination.searchParams.get('file')) {
+                event.preventDefault();
+                setNavigationLocation(destination);
+                window.dispatchEvent(new CustomEvent('course:php-navigate', {
+                    detail: { url: destination.href }
+                }));
+            }
+        }
+        if (link && link.closest('.sidebar') && !desktopLayout.matches) {
             setMenuOpen(false);
         }
     });
@@ -145,6 +156,15 @@
     });
 
     routePHPInteractions();
+    window.addEventListener('popstate', function () {
+        var nextUrl = new URL(window.location.href);
+        if (isPHPRunnerUrl(nextUrl)) {
+            setNavigationLocation(nextUrl);
+        }
+    });
+    window.addEventListener('course:location-sync', function (event) {
+        setNavigationLocation(new URL(event.detail.url));
+    });
 
     Array.prototype.forEach.call(shadow.querySelectorAll('.lab-row'), function (button) {
         button.addEventListener('click', function () {
@@ -159,19 +179,7 @@
 
     if (!isCourseHome) {
         expandLab(labName);
-        loadLab(labName).then(function (data) {
-            var currentIndex = data.lessons.findIndex(function (page) {
-                return decodeURIComponent(page.key) === currentKey;
-            });
-            if (currentIndex > 0) {
-                configurePager(shadow.getElementById('previous-page'), data.lessons[currentIndex - 1]);
-            }
-            if (currentIndex >= 0 && currentIndex < data.lessons.length - 1) {
-                configurePager(shadow.getElementById('next-page'), data.lessons[currentIndex + 1]);
-            }
-        }).catch(function () {
-            // The expanded submenu displays its own unavailable state.
-        });
+        configureCurrentPager();
     }
 
     function applyLayout(mediaQuery) {
@@ -353,6 +361,64 @@
         link.href = page.href;
         link.title = page.label;
         link.hidden = false;
+    }
+
+    function configureCurrentPager() {
+        resetPager();
+        loadLab(labName).then(function (data) {
+            var currentIndex = data.lessons.findIndex(function (page) {
+                return decodeURIComponent(page.key) === currentKey;
+            });
+            if (currentIndex > 0) {
+                configurePager(shadow.getElementById('previous-page'), data.lessons[currentIndex - 1]);
+            }
+            if (currentIndex >= 0 && currentIndex < data.lessons.length - 1) {
+                configurePager(shadow.getElementById('next-page'), data.lessons[currentIndex + 1]);
+            }
+        }).catch(function () {
+            // The expanded submenu displays its own unavailable state.
+        });
+    }
+
+    function resetPager() {
+        ['previous-page', 'next-page'].forEach(function (id) {
+            var link = shadow.getElementById(id);
+            link.hidden = true;
+            link.removeAttribute('href');
+            link.removeAttribute('title');
+        });
+    }
+
+    function setNavigationLocation(url) {
+        currentUrl = new URL(url.href);
+        simulatedFile = currentUrl.searchParams.get('file');
+        relativePath = simulatedFile || decodeURIComponent(currentUrl.pathname.substring(courseRoot.pathname.length));
+        currentKey = navigationKey(currentUrl);
+        pathParts = relativePath.split('/').filter(Boolean);
+        isCourseHome = pathParts.length === 0 || relativePath.toLowerCase() === 'index.html';
+        labName = isCourseHome ? 'Labs' : pathParts[0];
+        pageName = isCourseHome ? 'All labs' : pathParts[pathParts.length - 1].replace(/\.[^.]+$/, '');
+        labUrl = isCourseHome ? courseRoot : new URL(encodeURIComponent(labName) + '/', courseRoot);
+
+        shadow.querySelector('.crumbs').innerHTML = buildBreadcrumbs();
+        Array.prototype.forEach.call(shadow.querySelectorAll('.lab-row'), function (button) {
+            button.classList.toggle('current', button.getAttribute('data-lab') === labName);
+        });
+        collapseLabs();
+        expandLab(labName);
+        configureCurrentPager();
+    }
+
+    function navigationKey(url) {
+        if (isPHPRunnerUrl(url) && url.searchParams.get('file')) {
+            return decodeURIComponent(url.pathname + '?file=' + encodeURIComponent(url.searchParams.get('file')));
+        }
+        return decodeURIComponent(url.pathname + url.search);
+    }
+
+    function isPHPRunnerUrl(url) {
+        return url.origin === courseRoot.origin &&
+            url.pathname === new URL('php-runner.html', courseRoot).pathname;
     }
 
     function routePHPInteractions() {
