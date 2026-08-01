@@ -79,7 +79,7 @@ async function navigateToRunnerUrl(url, addHistory) {
 
 function navigateWithinRunner(file, method, fields) {
     const url = new URL('php-runner.html', courseRoot);
-    url.searchParams.set('ui', '7');
+    url.searchParams.set('ui', '8');
     url.searchParams.set('file', normalizeTarget(file));
     url.searchParams.set('method', method);
     if (fields.toString()) {

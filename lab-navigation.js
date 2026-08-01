@@ -82,7 +82,7 @@
         '.exercise-link{gap:8px;min-height:31px;padding:5px 7px;font-size:12px}',
         '.exercise-link .number{display:grid;flex:0 0 20px;height:20px;place-items:center;border-radius:4px;color:#8b8e96;background:#e9eaed;font-size:8px}',
         '.exercise-link .text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-        '.exercise-link.active{color:var(--rw-purple);background:var(--rw-purple-soft);font-weight:650}',
+        '.exercise-link.active{color:var(--rw-purple);background:var(--rw-purple-soft);box-shadow:inset 3px 0 0 var(--rw-purple);font-weight:700}',
         '.exercise-link.active .number{color:#fff;background:var(--rw-purple)}',
         '.exercise-link.php .number{color:#7b52a8;background:#eee7f5}',
         '.exercise-link.overview{color:#6a6d74;font-weight:650}',
@@ -296,12 +296,12 @@
                     Array.prototype.forEach.call(section.querySelectorAll('.file-list a'), function (lessonLink) {
                         var pageUrl = new URL(lessonLink.getAttribute('href'), indexUrl);
                         if (headingText === 'PHP source') {
-                            pageUrl.searchParams.set('ui', '7');
+                            pageUrl.searchParams.set('ui', '8');
                         }
                         var lesson = {
                             href: pageUrl.href,
                             path: pageUrl.pathname,
-                            key: pageUrl.pathname + pageUrl.search,
+                            key: navigationKey(pageUrl),
                             label: lessonLink.textContent.trim(),
                             type: headingText === 'PHP source' ? 'php' : 'browser'
                         };
@@ -479,7 +479,7 @@
     function openPHPRunner(destination, method, fields) {
         var file = decodeURIComponent(destination.pathname.substring(courseRoot.pathname.length));
         var runnerUrl = new URL('php-runner.html', courseRoot);
-        runnerUrl.searchParams.set('ui', '7');
+        runnerUrl.searchParams.set('ui', '8');
         runnerUrl.searchParams.set('file', file);
         runnerUrl.searchParams.set('method', method);
         if (fields.toString()) {
