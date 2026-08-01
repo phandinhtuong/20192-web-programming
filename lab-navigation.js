@@ -9,12 +9,13 @@
     var SIDEBAR_WIDTH = 244;
     var courseRoot = new URL('./', script.src);
     var currentUrl = new URL(window.location.href);
-    var relativePath = decodeURIComponent(currentUrl.pathname.substring(courseRoot.pathname.length));
+    var simulatedFile = currentUrl.searchParams.get('file');
+    var relativePath = simulatedFile || decodeURIComponent(currentUrl.pathname.substring(courseRoot.pathname.length));
+    var currentKey = decodeURIComponent(currentUrl.pathname + currentUrl.search);
     var pathParts = relativePath.split('/').filter(Boolean);
     var labName = pathParts[0] || 'Labs';
     var pageName = (pathParts[pathParts.length - 1] || '').replace(/\.[^.]+$/, '');
     var labUrl = new URL(encodeURIComponent(labName) + '/', courseRoot);
-    var repositoryUrl = 'https://github.com/phandinhtuong/20192-web-programming/tree/phan-dinh-tuong-20164582';
     var labDirectories = [
         'Lab1', 'Lab2', 'Lab3-1', 'Lab3-2', 'Lab4', 'Lab5', 'Lab6-1', 'Lab6-2',
         'Lab7', 'Lab8-1', 'Lab8-2', 'Lab9', 'Lab10', 'Lab11', 'Lab12'
@@ -86,7 +87,6 @@
         '.exercise-link.php .number{color:#7b52a8;background:#eee7f5}',
         '.exercise-link.overview{color:#6a6d74;font-weight:650}',
         '.loading{padding:10px;color:#8a909a;font-size:12px}',
-        '.source-link{margin-top:15px;border:1px solid #dcdee3;background:#fff}',
         '.overlay{display:none;position:fixed;z-index:1;inset:60px 0 0;border:0;background:rgba(17,24,39,.32);cursor:pointer}',
         '@media(max-width:900px){.bar{gap:10px;min-height:56px;padding:0 10px}.menu-toggle{display:block}.brand{flex:0 auto;align-self:auto;padding:0;border:0;font-size:0}.brand:after{content:"Web Programming";font-size:14px}.mark{width:30px;height:30px}.crumbs{display:none}.pager{margin-left:auto;margin-right:0}.pager a{min-height:32px;padding:5px 9px}.pager .label{display:none}.sidebar{top:57px;z-index:4;transform:translateX(-100%);box-shadow:10px 0 30px rgba(20,30,50,.16)}.sidebar.open{transform:translateX(0)}.overlay.open{display:block}}',
         '@media(max-width:460px){.brand:after{content:"2019.2"}.pager a{padding:5px 8px}}',
@@ -106,7 +106,6 @@
         '    <a class="side-link" href="' + courseRoot.href + '"><span class="side-icon" aria-hidden="true">H</span><span>All labs</span></a>',
         '    <p class="side-label">Course labs</p>',
         '    <div class="lab-menu">' + buildLabMenu() + '</div>',
-        '    <a class="side-link source-link" href="' + repositoryUrl + '"><span class="side-icon" aria-hidden="true">G</span><span>Original repository</span></a>',
         '  </div>',
         '</aside>',
         '<button class="overlay" id="menu-overlay" type="button" aria-label="Close lab navigation"></button>'
@@ -143,6 +142,8 @@
         }
     });
 
+    routePHPInteractions();
+
     Array.prototype.forEach.call(shadow.querySelectorAll('.lab-row'), function (button) {
         button.addEventListener('click', function () {
             var selectedLab = button.getAttribute('data-lab');
@@ -156,14 +157,14 @@
 
     expandLab(labName);
     loadLab(labName).then(function (data) {
-        var currentIndex = data.browserPages.findIndex(function (page) {
-            return decodeURIComponent(page.path) === decodeURIComponent(currentUrl.pathname);
+        var currentIndex = data.lessons.findIndex(function (page) {
+            return decodeURIComponent(page.key) === currentKey;
         });
         if (currentIndex > 0) {
-            configurePager(shadow.getElementById('previous-page'), data.browserPages[currentIndex - 1]);
+            configurePager(shadow.getElementById('previous-page'), data.lessons[currentIndex - 1]);
         }
-        if (currentIndex >= 0 && currentIndex < data.browserPages.length - 1) {
-            configurePager(shadow.getElementById('next-page'), data.browserPages[currentIndex + 1]);
+        if (currentIndex >= 0 && currentIndex < data.lessons.length - 1) {
+            configurePager(shadow.getElementById('next-page'), data.lessons[currentIndex + 1]);
         }
     }).catch(function () {
         // The expanded submenu displays its own unavailable state.
@@ -263,6 +264,7 @@
                         var lesson = {
                             href: pageUrl.href,
                             path: pageUrl.pathname,
+                            key: pageUrl.pathname + pageUrl.search,
                             label: lessonLink.textContent.trim(),
                             type: headingText === 'PHP source' ? 'php' : 'browser'
                         };
@@ -297,7 +299,7 @@
 
         lessons.forEach(function (lesson, index) {
             var link = document.createElement('a');
-            var isActive = directory === labName && decodeURIComponent(lesson.path) === decodeURIComponent(currentUrl.pathname);
+            var isActive = directory === labName && decodeURIComponent(lesson.key) === currentKey;
             link.className = 'exercise-link ' + lesson.type + (isActive ? ' active' : '');
             link.href = lesson.href;
             link.title = lesson.label;
@@ -321,6 +323,55 @@
         link.href = page.href;
         link.title = page.label;
         link.hidden = false;
+    }
+
+    function routePHPInteractions() {
+        Array.prototype.forEach.call(document.querySelectorAll('form'), function (form) {
+            form.addEventListener('submit', function (event) {
+                var actionUrl = new URL(form.getAttribute('action') || currentUrl.href, currentUrl);
+                if (!isCoursePHPUrl(actionUrl)) {
+                    return;
+                }
+
+                event.preventDefault();
+                var method = (form.getAttribute('method') || 'GET').toUpperCase();
+                var formData;
+                try {
+                    formData = new FormData(form, event.submitter);
+                } catch (error) {
+                    formData = new FormData(form);
+                }
+                openPHPRunner(actionUrl, method, new URLSearchParams(formData));
+            });
+        });
+
+        Array.prototype.forEach.call(document.querySelectorAll('a[href]'), function (link) {
+            link.addEventListener('click', function (event) {
+                var destination = new URL(link.getAttribute('href'), currentUrl);
+                if (!isCoursePHPUrl(destination)) {
+                    return;
+                }
+                event.preventDefault();
+                openPHPRunner(destination, 'GET', destination.searchParams);
+            });
+        });
+    }
+
+    function isCoursePHPUrl(url) {
+        return url.origin === courseRoot.origin &&
+            url.pathname.indexOf(courseRoot.pathname) === 0 &&
+            url.pathname.toLowerCase().endsWith('.php');
+    }
+
+    function openPHPRunner(destination, method, fields) {
+        var file = decodeURIComponent(destination.pathname.substring(courseRoot.pathname.length));
+        var runnerUrl = new URL('php-runner.html', courseRoot);
+        runnerUrl.searchParams.set('file', file);
+        runnerUrl.searchParams.set('method', method);
+        if (fields.toString()) {
+            runnerUrl.searchParams.set('data', fields.toString());
+        }
+        window.location.assign(runnerUrl.href);
     }
 
     function escapeHtml(value) {

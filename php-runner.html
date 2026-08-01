@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PHP Lesson Simulation · 2019.2 Web Programming</title>
+    <link rel="stylesheet" href="php-runner.css">
+</head>
+<body class="runner-page">
+    <main class="runner-workspace">
+        <header class="runner-heading">
+            <div>
+                <p class="runner-eyebrow"><span></span> Live PHP simulation</p>
+                <h1 id="lesson-title">Loading lesson…</h1>
+                <p class="runner-description">The original PHP lesson runs locally in your browser through WebAssembly.</p>
+            </div>
+            <button id="reload-lesson" type="button" disabled>Reload lesson</button>
+        </header>
+
+        <section class="runtime-status" id="runtime-status" aria-live="polite">
+            <span class="status-spinner" aria-hidden="true"></span>
+            <div><strong>Starting PHP 7.4</strong><p id="status-detail">Preparing the browser runtime…</p></div>
+        </section>
+
+        <section class="output-panel" aria-label="PHP lesson output">
+            <div class="output-toolbar">
+                <span class="status-dot"></span>
+                <strong>Lesson output</strong>
+                <span id="runtime-label">Initializing</span>
+            </div>
+            <iframe id="lesson-output" title="Rendered PHP lesson" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-same-origin"></iframe>
+        </section>
+    </main>
+
+    <iframe id="php-engine" title="PHP WebAssembly runtime" aria-hidden="true" tabindex="-1"></iframe>
+    <script type="module" src="php-runner.js"></script>
+    <script src="lab-navigation.js" data-course-navigation defer></script>
+</body>
+</html>

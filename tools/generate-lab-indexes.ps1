@@ -21,7 +21,6 @@ $labDirectories = @(
 
 $browserExtensions = @('.html', '.htm', '.xml')
 $assetExtensions = @('.css', '.js', '.jpg', '.jpeg', '.png', '.gif', '.svg')
-$githubBase = 'https://github.com/phandinhtuong/20192-web-programming/blob/phan-dinh-tuong-20164582'
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
 function Encode-Html([string] $value) {
@@ -39,7 +38,8 @@ function New-FileList([array] $files, [string] $labName, [string] $kind) {
         $relativePath = $file.FullName.Substring((Join-Path $repoRoot $labName).Length + 1)
         $encodedRelativePath = Encode-Path $relativePath
         $displayPath = Encode-Html ($relativePath -replace '\\', ' / ')
-        $displayName = Encode-Html $file.BaseName
+        $fileLabel = if ([string]::IsNullOrWhiteSpace($file.BaseName)) { $file.Name } else { $file.BaseName }
+        $displayName = Encode-Html $fileLabel
 
         if ($kind -eq 'browser') {
             $href = $encodedRelativePath
@@ -47,9 +47,13 @@ function New-FileList([array] $files, [string] $labName, [string] $kind) {
         } elseif ($kind -eq 'asset') {
             $href = $encodedRelativePath
             $action = 'Open original file'
+        } elseif ($file.Extension.ToLowerInvariant() -eq '.php') {
+            $runnerTarget = [Uri]::EscapeDataString("$labName/$($relativePath -replace '\\', '/')")
+            $href = "../php-runner.html?file=$runnerTarget"
+            $action = 'Run live browser simulation'
         } else {
-            $href = "$githubBase/$(Encode-Path $labName)/$encodedRelativePath"
-            $action = 'View original source on GitHub'
+            $href = $encodedRelativePath
+            $action = 'Open original course file'
         }
 
         "                <li><a href=`"$href`">$displayName</a><small>$displayPath &middot; $action</small></li>"
@@ -86,7 +90,7 @@ foreach ($labName in $labDirectories) {
 
     if ($phpFiles.Count -gt 0) {
         $list = New-FileList $phpFiles $labName 'source'
-        $sections.Add("        <section class=`"file-group`"><h2>PHP source</h2><p class=`"note`">GitHub Pages cannot execute these files. The links open the unchanged source code.</p><ul class=`"file-list`">$([Environment]::NewLine)$list$([Environment]::NewLine)            </ul></section>")
+        $sections.Add("        <section class=`"file-group`"><h2>PHP source</h2><p class=`"note`">These lessons run inside the browser using a WebAssembly PHP runtime.</p><ul class=`"file-list`">$([Environment]::NewLine)$list$([Environment]::NewLine)            </ul></section>")
     }
 
     if ($assetFiles.Count -gt 0) {
@@ -124,4 +128,20 @@ $sectionMarkup
     [System.IO.File]::WriteAllText((Join-Path $labPath 'index.html'), $page, $utf8NoBom)
 }
 
-Write-Output "Generated $($labDirectories.Count) lab index pages."
+$runtimeExtensions = @('.php', '.html', '.htm', '.xml', '.css', '.js', '.htaccess')
+$runtimeFiles = foreach ($labName in $labDirectories) {
+    Get-ChildItem -LiteralPath (Join-Path $repoRoot $labName) -Recurse -File |
+        Where-Object {
+            $_.Name -ne 'index.html' -and
+            $runtimeExtensions -contains $_.Extension.ToLowerInvariant() -and
+            $_.FullName -notmatch '[\\/]nbproject[\\/]'
+        } |
+        ForEach-Object {
+            ($_.FullName.Substring($repoRoot.Length + 1) -replace '\\', '/')
+        }
+}
+
+$manifest = @{ files = @($runtimeFiles | Sort-Object -Unique) } | ConvertTo-Json -Depth 3
+[System.IO.File]::WriteAllText((Join-Path $repoRoot 'course-files.json'), $manifest, $utf8NoBom)
+
+Write-Output "Generated $($labDirectories.Count) lab index pages and a $($runtimeFiles.Count)-file PHP runtime manifest."
