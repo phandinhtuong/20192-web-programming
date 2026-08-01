@@ -6,9 +6,9 @@ $closingBody = New-Object System.Text.RegularExpressions.Regex('</body>', [Syste
 $updated = 0
 $unchanged = 0
 
-$pages = Get-ChildItem -LiteralPath $repoRoot -Recurse -File -Filter '*.html' |
+$pages = Get-ChildItem -LiteralPath $repoRoot -Recurse -File |
     Where-Object {
-        $_.Name -ne 'index.html' -and
+        $_.Extension.ToLowerInvariant() -in @('.html', '.htm') -and
         $_.FullName -notmatch '[\\/]\.git[\\/]' -and
         $_.FullName -notmatch '[\\/]nbproject[\\/]'
     }

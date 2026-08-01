@@ -41,7 +41,11 @@ function New-FileList([array] $files, [string] $labName, [string] $kind) {
         $fileLabel = if ([string]::IsNullOrWhiteSpace($file.BaseName)) { $file.Name } else { $file.BaseName }
         $displayName = Encode-Html $fileLabel
 
-        if ($kind -eq 'browser') {
+        if ($kind -eq 'browser' -and $file.Extension.ToLowerInvariant() -eq '.xml') {
+            $viewerTarget = [Uri]::EscapeDataString("$labName/$($relativePath -replace '\\', '/')")
+            $href = "../document-viewer.html?file=$viewerTarget"
+            $action = 'Open original page'
+        } elseif ($kind -eq 'browser') {
             $href = $encodedRelativePath
             $action = 'Open original page'
         } elseif ($kind -eq 'asset') {

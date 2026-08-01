@@ -13,9 +13,10 @@
     var relativePath = simulatedFile || decodeURIComponent(currentUrl.pathname.substring(courseRoot.pathname.length));
     var currentKey = decodeURIComponent(currentUrl.pathname + currentUrl.search);
     var pathParts = relativePath.split('/').filter(Boolean);
-    var labName = pathParts[0] || 'Labs';
-    var pageName = (pathParts[pathParts.length - 1] || '').replace(/\.[^.]+$/, '');
-    var labUrl = new URL(encodeURIComponent(labName) + '/', courseRoot);
+    var isCourseHome = pathParts.length === 0 || relativePath.toLowerCase() === 'index.html';
+    var labName = isCourseHome ? 'Labs' : pathParts[0];
+    var pageName = isCourseHome ? 'All labs' : pathParts[pathParts.length - 1].replace(/\.[^.]+$/, '');
+    var labUrl = isCourseHome ? courseRoot : new URL(encodeURIComponent(labName) + '/', courseRoot);
     var labDirectories = [
         'Lab1', 'Lab2', 'Lab3-1', 'Lab3-2', 'Lab4', 'Lab5', 'Lab6-1', 'Lab6-2',
         'Lab7', 'Lab8-1', 'Lab8-2', 'Lab9', 'Lab10', 'Lab11', 'Lab12'
@@ -26,7 +27,6 @@
     var originalBodyPaddingPriority = document.body.style.getPropertyPriority('padding-left');
     var computedBodyStyle = window.getComputedStyle(document.body);
     var initialBodyPadding = parseFloat(computedBodyStyle.paddingLeft) || 0;
-    var initialBodyMargin = parseFloat(computedBodyStyle.marginLeft) || 0;
 
     var host = document.createElement('div');
     host.id = 'course-page-navigation';
@@ -95,7 +95,7 @@
         '  <div class="bar">',
         '    <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Open lab navigation" aria-controls="course-sidebar" aria-expanded="false"><span></span><span></span><span></span></button>',
         '    <a class="brand" href="' + courseRoot.href + '"><span class="mark" aria-hidden="true"></span><span>Web Programming</span></a>',
-        '    <span class="crumbs"><a href="' + courseRoot.href + '">Home</a><a href="' + labUrl.href + '">' + escapeHtml(labName) + '</a><span class="page">' + escapeHtml(pageName) + '</span></span>',
+        '    <span class="crumbs">' + buildBreadcrumbs() + '</span>',
         '    <span class="spacer"></span>',
         '    <span class="pager"><a id="previous-page" hidden><span aria-hidden="true">&larr;&nbsp;</span><span class="label">Previous</span></a><a id="next-page" hidden><span class="label">Next</span><span aria-hidden="true">&nbsp;&rarr;</span></a></span>',
         '  </div>',
@@ -119,11 +119,13 @@
     var desktopLayout = window.matchMedia('(min-width: 901px)');
 
     applyLayout(desktopLayout);
+    alignHostTop();
     if (desktopLayout.addEventListener) {
         desktopLayout.addEventListener('change', applyLayout);
     } else {
         desktopLayout.addListener(applyLayout);
     }
+    window.addEventListener('resize', alignHostToViewport);
 
     menuToggle.addEventListener('click', function () {
         setMenuOpen(!sidebar.classList.contains('open'));
@@ -155,25 +157,26 @@
         });
     });
 
-    expandLab(labName);
-    loadLab(labName).then(function (data) {
-        var currentIndex = data.lessons.findIndex(function (page) {
-            return decodeURIComponent(page.key) === currentKey;
+    if (!isCourseHome) {
+        expandLab(labName);
+        loadLab(labName).then(function (data) {
+            var currentIndex = data.lessons.findIndex(function (page) {
+                return decodeURIComponent(page.key) === currentKey;
+            });
+            if (currentIndex > 0) {
+                configurePager(shadow.getElementById('previous-page'), data.lessons[currentIndex - 1]);
+            }
+            if (currentIndex >= 0 && currentIndex < data.lessons.length - 1) {
+                configurePager(shadow.getElementById('next-page'), data.lessons[currentIndex + 1]);
+            }
+        }).catch(function () {
+            // The expanded submenu displays its own unavailable state.
         });
-        if (currentIndex > 0) {
-            configurePager(shadow.getElementById('previous-page'), data.lessons[currentIndex - 1]);
-        }
-        if (currentIndex >= 0 && currentIndex < data.lessons.length - 1) {
-            configurePager(shadow.getElementById('next-page'), data.lessons[currentIndex + 1]);
-        }
-    }).catch(function () {
-        // The expanded submenu displays its own unavailable state.
-    });
+    }
 
     function applyLayout(mediaQuery) {
         if (mediaQuery.matches) {
             document.body.style.setProperty('padding-left', (initialBodyPadding + SIDEBAR_WIDTH) + 'px', 'important');
-            host.style.marginLeft = '-' + (initialBodyMargin + initialBodyPadding + SIDEBAR_WIDTH) + 'px';
             setMenuOpen(false);
         } else {
             if (originalBodyPadding) {
@@ -181,8 +184,20 @@
             } else {
                 document.body.style.removeProperty('padding-left');
             }
-            host.style.removeProperty('margin-left');
         }
+        alignHostToViewport();
+    }
+
+    function alignHostToViewport() {
+        host.style.removeProperty('margin-left');
+        var renderedMargin = parseFloat(window.getComputedStyle(host).marginLeft) || 0;
+        var leftOffset = host.getBoundingClientRect().left;
+        host.style.marginLeft = (renderedMargin - leftOffset) + 'px';
+    }
+
+    function alignHostTop() {
+        host.style.marginTop = '0px';
+        host.style.marginTop = (-host.getBoundingClientRect().top) + 'px';
     }
 
     function setMenuOpen(isOpen) {
@@ -211,6 +226,15 @@
 
     function formatLabNumber(directory) {
         return directory.replace(/^Lab/, '').replace('-', '.');
+    }
+
+    function buildBreadcrumbs() {
+        if (isCourseHome) {
+            return '<span class="page">All labs</span>';
+        }
+        return '<a href="' + courseRoot.href + '">Home</a>' +
+            '<a href="' + labUrl.href + '">' + escapeHtml(labName) + '</a>' +
+            '<span class="page">' + escapeHtml(pageName) + '</span>';
     }
 
     function collapseLabs() {
