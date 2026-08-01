@@ -29,7 +29,7 @@ bootPromise.catch(error => {
 });
 
 window.addEventListener('course:php-navigate', event => {
-    navigateToRunnerUrl(new URL(event.detail.url), true);
+    navigateToRunnerUrl(new URL(event.detail.url), false);
 });
 
 window.addEventListener('popstate', () => {

@@ -125,7 +125,7 @@ foreach ($labName in $labDirectories) {
         <p>This page indexes the original files in this lab. No exercise code has been rewritten.</p>
 $sectionMarkup
     </main>
-    <script src="../lab-navigation.js" data-course-navigation defer></script>
+    <script src="../lab-navigation.js?v=3" data-course-navigation defer></script>
 </body>
 </html>
 "@

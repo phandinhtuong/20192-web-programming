@@ -136,9 +136,11 @@
     shadow.addEventListener('click', function (event) {
         var link = event.target.closest && event.target.closest('a[href]');
         if (link && isPHPRunnerUrl(currentUrl)) {
-            var destination = new URL(link.href);
+            var runnerHref = link.getAttribute('data-runner-href');
+            var destination = new URL(runnerHref || link.href, currentUrl);
             if (isPHPRunnerUrl(destination) && destination.searchParams.get('file')) {
                 event.preventDefault();
+                window.history.pushState({}, '', destination);
                 setNavigationLocation(destination);
                 window.dispatchEvent(new CustomEvent('course:php-navigate', {
                     detail: { url: destination.href }
@@ -339,7 +341,7 @@
             var link = document.createElement('a');
             var isActive = directory === labName && decodeURIComponent(lesson.key) === currentKey;
             link.className = 'exercise-link ' + lesson.type + (isActive ? ' active' : '');
-            link.href = lesson.href;
+            setLessonHref(link, lesson.href);
             link.title = lesson.label;
             if (isActive) {
                 link.setAttribute('aria-current', 'page');
@@ -358,7 +360,7 @@
     }
 
     function configurePager(link, page) {
-        link.href = page.href;
+        setLessonHref(link, page.href);
         link.title = page.label;
         link.hidden = false;
     }
@@ -385,6 +387,7 @@
             var link = shadow.getElementById(id);
             link.hidden = true;
             link.removeAttribute('href');
+            link.removeAttribute('data-runner-href');
             link.removeAttribute('title');
         });
     }
@@ -419,6 +422,17 @@
     function isPHPRunnerUrl(url) {
         return url.origin === courseRoot.origin &&
             url.pathname === new URL('php-runner.html', courseRoot).pathname;
+    }
+
+    function setLessonHref(link, href) {
+        var destination = new URL(href, currentUrl);
+        if (isPHPRunnerUrl(currentUrl) && isPHPRunnerUrl(destination)) {
+            link.href = '#';
+            link.setAttribute('data-runner-href', destination.href);
+        } else {
+            link.href = destination.href;
+            link.removeAttribute('data-runner-href');
+        }
     }
 
     function routePHPInteractions() {
