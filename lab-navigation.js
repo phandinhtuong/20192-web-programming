@@ -94,17 +94,17 @@
 
     document.body.insertBefore(host, document.body.firstChild);
 
+    var menuToggle = shadow.getElementById('menu-toggle');
+    var sidebar = shadow.getElementById('course-sidebar');
+    var overlay = shadow.getElementById('menu-overlay');
     var desktopLayout = window.matchMedia('(min-width: 901px)');
+
     applyLayout(desktopLayout);
     if (desktopLayout.addEventListener) {
         desktopLayout.addEventListener('change', applyLayout);
     } else {
         desktopLayout.addListener(applyLayout);
     }
-
-    var menuToggle = shadow.getElementById('menu-toggle');
-    var sidebar = shadow.getElementById('course-sidebar');
-    var overlay = shadow.getElementById('menu-overlay');
 
     menuToggle.addEventListener('click', function () {
         setMenuOpen(!sidebar.classList.contains('open'));
